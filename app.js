@@ -1,48 +1,62 @@
-var app = require('express')();
-var MongoClient = require('mongodb').MongoClient;
-console.log("Heyyy");
+const express = require('express');
+const expressLayouts = require('express-ejs-layouts');
+const mongoose = require('mongoose');
+const passport = require('passport');
+const flash = require('connect-flash');
+const session = require('express-session');
 
+const app = express();
 
-app.get('/home', (req,res)=>{
-res.send("Hello World!");
+// Passport Config
+require('./config/passport')(passport);
+
+// DB Config
+const db = require('./config/keys').mongoURI;
+
+// Connect to MongoDB
+mongoose
+  .connect(
+    db,
+    { useNewUrlParser: true }
+  )
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.log(err));
+
+// EJS
+app.use(expressLayouts);
+app.set('view engine', 'ejs');
+
+// Express body parser
+app.use(express.urlencoded({ extended: false }));
+
+// Express session
+app.use(
+  session({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true
+  })
+);
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Connect flash
+app.use(flash());
+
+// Global variables
+app.use(function(req, res, next) {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.error = req.flash('error');
+  next();
 });
 
+// Routes
+app.use('/', require('./routes/index.js'));
+app.use('/users', require('./routes/users.js'));
 
+const PORT = process.env.PORT || 5000;
 
-// Connect to the db
-MongoClient.connect("mongodb://localhost:27017/MyDb", function (err, db) {
-   
-     if(err) throw err;
-
-     //Write databse Insert/Update/Query code here..
-                
-});
-
-var userSchema = new mongoose.Schema({
-  user: {
-    id: String,
-    name:String,
-    Email: String,
-    Points: Int16Array,
-    DoneProjects: Array,
-    CurrentProjects: Array,
-    Friends: Array
-    },
-    
-    Project: {
-    Id: String,
-    Steps: Array,
-    Author: user,
-    NoDone: Int16Array
-},
-UserProject:{
-
-Id: String,
-Project: Project,
-Mentor: user
-}});
-
-
-app.listen(5500,server=>{
-console.log("Server is running!");
-});
+app.listen(PORT, console.log(`Server started on port ${PORT}`));
