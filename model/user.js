@@ -1,27 +1,23 @@
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
-  User:{
-
-    Id: String,
-    Name: String,
-    Email: String,
-    Points: Int16Array,
-    DoneProjects: Array,
-    CurrentProjects: Array,
-    Friends:Array
+ name: {
+    type: String,
+    required: true
   },
-  Project:{
-Id: String,
-Steps: Array,
-Author: User,
-NoDone: Int16Array
+  email: {
+    type: String,
+    required: true
   },
-  UserProject:{
-Id:String,
-Project: Project,
-Mentor:User
-  }
+  password: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+ }   
+ 
 });
 
 const User = mongoose.model('User', UserSchema);
