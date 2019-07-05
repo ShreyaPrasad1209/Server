@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 // Load User model
-const User = require('../models/User');
+const User = require('../model/user');
 const { forwardAuthenticated } = require('../config/auth');
 
 // Login Page
@@ -17,7 +17,7 @@ router.post('/register', (req, res) => {
   const { name, email, password, password2 } = req.body;
   let errors = [];
 
-  if (!User || !Project || !UserProject) {
+  if (!name || !email || !password || !password2) {
     errors.push({ msg: 'Please enter all fields' });
   }
 
@@ -61,12 +61,14 @@ router.post('/register', (req, res) => {
             newUser.password = hash;
             newUser
               .save()
-              .then(user => {
-                req.flash(
-                  'success_msg',
-                  'You are now registered and can log in'
-                );
-                res.redirect('/users/login');
+              .then(u => {
+                if (u) {
+                  req.flash(
+                    'success_msg',
+                    'You are now registered and can log in'
+                  );
+                  res.redirect('/users/login');
+                }
               })
               .catch(err => console.log(err));
           });
